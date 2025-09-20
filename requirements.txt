@@ -5,3 +5,5 @@ google-genai
 PyPDF2
 feedparser
 python-dateutil
+flask-sqlalchemy
+psycopg2-binary
