@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Upload - Smart Research Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .nav {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .nav a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 8px 15px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+        .nav a:hover {
+            background-color: #e9ecef;
+        }
+        .upload-area {
+            border: 2px dashed #007bff;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background-color: #f8f9fa;
+            margin: 20px 0;
+        }
+        .upload-area:hover {
+            border-color: #0056b3;
+            background-color: #e3f2fd;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .flash-messages {
+            margin: 20px 0;
+        }
+        .flash-success {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .flash-error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .features {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            margin: 10px 0;
+            padding: 8px;
+            background-color: #fff;
+            border-radius: 3px;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <h1>PDF Upload & Analysis</h1>
+    
+    <div class="nav">
+        <a href="/">URL Research</a>
+        <a href="/upload">PDF Upload & Q&A</a>
+        <a href="/feeds">Live RSS Feeds</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/live_summary">Live Summary</a>
+    </div>
+    
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-error">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+    <div class="features">
+        <h3>PDF Analysis Features</h3>
+        <ul class="feature-list">
+            <li><strong>📄 Text Extraction:</strong> Automatically extract text content from PDF documents</li>
+            <li><strong>🤖 AI Q&A:</strong> Ask questions about your documents and get intelligent answers</li>
+            <li><strong>📊 Document Analytics:</strong> Track usage, page counts, and processing history</li>
+            <li><strong>🔍 Content Search:</strong> Query specific information within uploaded documents</li>
+        </ul>
+    </div>
+    
+    <form method="POST" enctype="multipart/form-data">
+        <div class="upload-area">
+            <h3>📤 Upload Your PDF Document</h3>
+            <p>Select a PDF file to upload and start asking questions about its content</p>
+            <input type="file" name="file" accept=".pdf" required>
+            <br>
+            <button type="submit">Upload & Process PDF</button>
+        </div>
+    </form>
+    
+    <div style="margin-top: 30px; padding: 15px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px;">
+        <h4>📋 Supported Features:</h4>
+        <ul>
+            <li>PDF files up to 16MB in size</li>
+            <li>Multi-page document processing</li>
+            <li>Intelligent Q&A with document context</li>
+            <li>Citation tracking and source management</li>
+            <li>Session-based document storage</li>
+        </ul>
+    </div>
+</body>
+</html>

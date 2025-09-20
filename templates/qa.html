@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q&A - {{ document.original_filename }} - Smart Research Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .nav {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .nav a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 8px 15px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+        .nav a:hover {
+            background-color: #e9ecef;
+        }
+        .document-info {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .qa-form {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .qa-form textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: vertical;
+        }
+        .qa-form button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .qa-form button:hover {
+            background-color: #0056b3;
+        }
+        .qa-form button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .qa-history {
+            margin: 20px 0;
+        }
+        .qa-item {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        .question {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+            font-weight: bold;
+        }
+        .answer {
+            padding: 15px;
+            white-space: pre-wrap;
+        }
+        .timestamp {
+            font-size: 12px;
+            color: #6c757d;
+            text-align: right;
+            padding: 8px 15px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #007bff;
+        }
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Document Q&A</h1>
+    
+    <div class="nav">
+        <a href="/">URL Research</a>
+        <a href="/upload">PDF Upload & Q&A</a>
+        <a href="/feeds">Live RSS Feeds</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/live_summary">Live Summary</a>
+    </div>
+    
+    <div class="document-info">
+        <h3>📄 {{ document.original_filename }}</h3>
+        <p><strong>Pages:</strong> {{ document.page_count }} | <strong>Uploaded:</strong> {{ document.upload_date.strftime('%Y-%m-%d %H:%M') }} | <strong>Size:</strong> {{ "%.1f"|format(document.file_size/1024) }} KB</p>
+    </div>
+    
+    <div class="qa-form">
+        <h3>🤖 Ask Questions About This Document</h3>
+        <form id="qa-form">
+            <input type="hidden" name="doc_id" value="{{ document.id }}">
+            <textarea name="question" placeholder="Ask any question about the content of this document..." required></textarea>
+            <br>
+            <button type="submit" id="submit-btn">Ask Question</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <p>🤔 Analyzing document and generating answer...</p>
+        </div>
+        
+        <div id="error-message" style="display: none;" class="error"></div>
+    </div>
+    
+    <div class="qa-history">
+        <h3>💬 Q&A History</h3>
+        
+        <div id="new-qa" style="display: none;" class="qa-item">
+            <div class="question" id="new-question"></div>
+            <div class="answer" id="new-answer"></div>
+            <div class="timestamp" id="new-timestamp"></div>
+        </div>
+        
+        {% if qa_history %}
+            {% for qa in qa_history %}
+                <div class="qa-item">
+                    <div class="question">❓ {{ qa.question }}</div>
+                    <div class="answer">💡 {{ qa.answer }}</div>
+                    <div class="timestamp">{{ qa.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; color: #6c757d; padding: 20px;">No questions asked yet. Start by asking something about this document!</p>
+        {% endif %}
+    </div>
+    
+    <script>
+        document.getElementById('qa-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const question = formData.get('question').trim();
+            
+            if (!question) {
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').textContent = 'Please enter a question.';
+                return;
+            }
+            
+            // Show loading state
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('error-message').style.display = 'none';
+            
+            try {
+                const response = await fetch('/ask_question', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('error-message').style.display = 'block';
+                    document.getElementById('error-message').textContent = data.error;
+                } else {
+                    // Display new Q&A at the top
+                    document.getElementById('new-question').textContent = '❓ ' + question;
+                    document.getElementById('new-answer').textContent = '💡 ' + data.answer;
+                    document.getElementById('new-timestamp').textContent = data.timestamp;
+                    document.getElementById('new-qa').style.display = 'block';
+                    
+                    // Clear the form
+                    this.reset();
+                }
+            } catch (error) {
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').textContent = 'Error: ' + error.message;
+            }
+            
+            // Hide loading state
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('submit-btn').disabled = false;
+        });
+    </script>
+</body>
+</html>

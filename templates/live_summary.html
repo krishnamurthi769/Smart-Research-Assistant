@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Summary - Smart Research Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .nav {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .nav a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 8px 15px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+        .nav a:hover {
+            background-color: #e9ecef;
+        }
+        .live-badge {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        .summary-container {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .summary-header {
+            color: #155724;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+        .summary-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+        }
+        .sources-section {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .sources-header {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .source-item {
+            background-color: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .source-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .source-link {
+            color: #007bff;
+            text-decoration: none;
+            word-break: break-all;
+            font-size: 14px;
+        }
+        .source-link:hover {
+            text-decoration: underline;
+        }
+        .source-date {
+            color: #6c757d;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .refresh-section {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+        }
+        .refresh-btn {
+            background-color: #ffc107;
+            color: #212529;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+        }
+        .refresh-btn:hover {
+            background-color: #e0a800;
+        }
+        .feeds-btn {
+            background-color: #17a2b8;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .feeds-btn:hover {
+            background-color: #138496;
+        }
+        .timestamp {
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .no-content {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .features-info {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            margin: 10px 0;
+            padding: 8px;
+            background-color: #fff;
+            border-radius: 3px;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <h1>⚡ Live News Summary</h1>
+    
+    <div class="nav">
+        <a href="/">URL Research</a>
+        <a href="/upload">PDF Upload & Q&A</a>
+        <a href="/feeds">Live RSS Feeds</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/live_summary">Live Summary</a>
+    </div>
+    
+    <div style="text-align: center;">
+        <span class="live-badge">🔴 LIVE UPDATE</span>
+    </div>
+    
+    {% if summary %}
+        <div class="timestamp">
+            Generated on {{ "now"|strftime('%Y-%m-%d %H:%M:%S') }} from latest RSS feed content
+        </div>
+        
+        <div class="summary-container">
+            <h2 class="summary-header">📰 Latest News & Trends Summary</h2>
+            <div class="summary-content">
+                {{ summary }}
+            </div>
+        </div>
+        
+        {% if sources %}
+        <div class="sources-section">
+            <h3 class="sources-header">📡 Live Sources ({{ sources|length }})</h3>
+            {% for source in sources %}
+                <div class="source-item">
+                    <div class="source-title">{{ source.title }}</div>
+                    <a href="{{ source.link }}" target="_blank" class="source-link">{{ source.link }}</a>
+                    <div class="source-date">Published: {{ source.published }}</div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+    {% else %}
+        <div class="no-content">
+            <h3>No Recent Content Available</h3>
+            <p>There are no new RSS entries to process at this time.</p>
+            <p>This could mean:</p>
+            <ul style="text-align: left; display: inline-block;">
+                <li>No RSS feeds have been added yet</li>
+                <li>All recent entries have already been processed</li>
+                <li>RSS feeds need to be refreshed</li>
+            </ul>
+        </div>
+    {% endif %}
+    
+    <div class="refresh-section">
+        <h3>🔄 Update Live Content</h3>
+        <p>Get the freshest insights by refreshing RSS feeds and generating new summaries</p>
+        <a href="/refresh_feeds" class="refresh-btn">🔄 Refresh All Feeds</a>
+        <a href="/live_summary" class="refresh-btn">⚡ Generate New Summary</a>
+        <a href="/feeds" class="feeds-btn">📡 Manage RSS Feeds</a>
+    </div>
+    
+    <div class="features-info">
+        <h3>🚀 Live Summary Features</h3>
+        <ul class="feature-list">
+            <li><strong>🤖 AI-Powered Analysis:</strong> Intelligent summaries combining multiple news sources</li>
+            <li><strong>📊 Trend Detection:</strong> Identify emerging topics and key insights across feeds</li>
+            <li><strong>⚡ Real-time Updates:</strong> Fresh content as soon as RSS feeds publish new articles</li>
+            <li><strong>🔗 Source Tracking:</strong> Full citation and link preservation for verification</li>
+            <li><strong>📈 Multi-source Context:</strong> Comprehensive view across different perspectives and outlets</li>
+        </ul>
+    </div>
+    
+    <div style="text-align: center; margin: 30px 0; padding: 20px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px;">
+        <h4>💡 Best Practices for Live Research</h4>
+        <p>
+            Add diverse RSS feeds from multiple sources • Refresh regularly for latest content • 
+            Combine with URL research for deeper analysis • Use document Q&A for detailed follow-up
+        </p>
+        <p style="color: #856404; font-size: 14px;">
+            Live summaries help you stay current with rapidly changing information and emerging trends.
+        </p>
+    </div>
+</body>
+</html>

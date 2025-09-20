@@ -3,6 +3,7 @@ import uuid
 import requests
 import feedparser
 from datetime import datetime, date
+from urllib.parse import urlparse
 from werkzeug.utils import secure_filename
 from bs4 import BeautifulSoup
 from PyPDF2 import PdfReader
@@ -18,7 +19,9 @@ client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET") or "smart-research-assistant-secret-key"
+app.secret_key = os.environ.get("SESSION_SECRET")
+if not app.secret_key:
+    raise ValueError("SESSION_SECRET environment variable is required for security")
 
 # Configure database
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
@@ -34,6 +37,33 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+def is_safe_url(url):
+    """Validate URL for security - prevent SSRF attacks"""
+    try:
+        parsed = urlparse(url)
+        # Block private IP ranges and localhost
+        if parsed.hostname:
+            import ipaddress
+            try:
+                ip = ipaddress.ip_address(parsed.hostname)
+                if ip.is_private or ip.is_loopback or ip.is_link_local:
+                    return False
+            except ValueError:
+                # Not an IP address, continue with hostname validation
+                pass
+            
+            # Block localhost variations
+            if parsed.hostname.lower() in ['localhost', '127.0.0.1', '0.0.0.0']:
+                return False
+        
+        # Only allow HTTP and HTTPS
+        if parsed.scheme not in ['http', 'https']:
+            return False
+            
+        return True
+    except Exception:
+        return False
 
 def get_or_create_session():
     """Get or create a research session for the user"""
@@ -115,6 +145,11 @@ def summarize():
             if not url.startswith(('http://', 'https://')):
                 url = 'https://' + url
             
+            # Validate URL for security
+            if not is_safe_url(url):
+                scraping_errors.append(f"Invalid or unsafe URL: {url}")
+                continue
+            
             # Make request with headers to avoid blocking
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -148,8 +183,8 @@ def summarize():
                 
                 # Create citation
                 citations.append({
-                    'url': url,
-                    'title': title_text[:200],
+                    'source_url': url,
+                    'source_title': title_text[:200],
                     'excerpt': content_excerpt[:500] + "..." if len(content_excerpt) > 500 else content_excerpt
                 })
             else:
@@ -201,8 +236,8 @@ def summarize():
                 citation = Citation(
                     session_id=research_session.session_id,
                     summary_id=summary.id,
-                    source_url=cite_data['url'],
-                    source_title=cite_data['title'],
+                    source_url=cite_data['source_url'],
+                    source_title=cite_data['source_title'],
                     source_type='url',
                     excerpt=cite_data['excerpt'],
                     relevance_score=0.8  # Default relevance score
@@ -240,7 +275,16 @@ def upload_document():
         return redirect(request.url)
     
     if file and file.filename.lower().endswith('.pdf'):
+        # Additional security checks
+        if file.content_type and not file.content_type.startswith('application/pdf'):
+            flash('Invalid file type. Only PDF files are allowed.')
+            return redirect(request.url)
+        
         filename = secure_filename(file.filename)
+        if not filename or not filename.lower().endswith('.pdf'):
+            flash('Invalid filename. Please upload a valid PDF file.')
+            return redirect(request.url)
+        
         unique_filename = f"{uuid.uuid4()}_{filename}"
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         file.save(file_path)

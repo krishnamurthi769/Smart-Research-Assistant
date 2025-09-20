@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live RSS Feeds - Smart Research Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .nav {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .nav a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 8px 15px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+        .nav a:hover {
+            background-color: #e9ecef;
+        }
+        .add-feed {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .add-feed input[type="url"] {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .add-feed button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .add-feed button:hover {
+            background-color: #218838;
+        }
+        .refresh-btn {
+            background-color: #17a2b8;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 10px 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .refresh-btn:hover {
+            background-color: #138496;
+        }
+        .live-summary-btn {
+            background-color: #ffc107;
+            color: #212529;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+        }
+        .live-summary-btn:hover {
+            background-color: #e0a800;
+        }
+        .feeds-list {
+            margin: 20px 0;
+        }
+        .feed-item {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin: 15px 0;
+            padding: 20px;
+        }
+        .feed-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .feed-url {
+            color: #007bff;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        .feed-url:hover {
+            text-decoration: underline;
+        }
+        .feed-meta {
+            color: #6c757d;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .feed-description {
+            margin: 10px 0;
+            color: #495057;
+        }
+        .flash-messages {
+            margin: 20px 0;
+        }
+        .flash-success {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .flash-error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .features {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            margin: 10px 0;
+            padding: 8px;
+            background-color: #fff;
+            border-radius: 3px;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live RSS Feeds Management</h1>
+    
+    <div class="nav">
+        <a href="/">URL Research</a>
+        <a href="/upload">PDF Upload & Q&A</a>
+        <a href="/feeds">Live RSS Feeds</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/live_summary">Live Summary</a>
+    </div>
+    
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-success">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+    <div class="features">
+        <h3>🚀 Live Feed Features</h3>
+        <ul class="feature-list">
+            <li><strong>📡 Real-time Updates:</strong> Automatically fetch the latest content from RSS feeds</li>
+            <li><strong>🤖 AI Summaries:</strong> Generate intelligent summaries from multiple news sources</li>
+            <li><strong>📊 Trend Analysis:</strong> Identify key trends and insights across sources</li>
+            <li><strong>🔄 Auto-refresh:</strong> Keep your research current with live updates</li>
+        </ul>
+    </div>
+    
+    <div style="text-align: center; margin: 20px 0;">
+        <a href="/refresh_feeds" class="refresh-btn">🔄 Refresh All Feeds</a>
+        <a href="/live_summary" class="live-summary-btn">⚡ Generate Live Summary</a>
+    </div>
+    
+    <div class="add-feed">
+        <h3>➕ Add New RSS Feed</h3>
+        <form method="POST" action="/add_feed">
+            <input type="url" name="feed_url" placeholder="Enter RSS feed URL (e.g., https://example.com/rss)" required>
+            <button type="submit">Add Feed</button>
+        </form>
+        <p style="font-size: 12px; color: #6c757d; margin-top: 10px;">
+            Examples: BBC News, TechCrunch, Reuters, or any website with RSS feeds
+        </p>
+    </div>
+    
+    <div class="feeds-list">
+        <h3>📋 Active RSS Feeds ({{ feeds|length }})</h3>
+        
+        {% if feeds %}
+            {% for feed in feeds %}
+                <div class="feed-item">
+                    <div class="feed-title">🌐 {{ feed.title or 'Unknown Feed' }}</div>
+                    <a href="{{ feed.url }}" target="_blank" class="feed-url">{{ feed.url }}</a>
+                    {% if feed.description %}
+                        <div class="feed-description">{{ feed.description[:200] }}{% if feed.description|length > 200 %}...{% endif %}</div>
+                    {% endif %}
+                    <div class="feed-meta">
+                        Last Updated: {{ feed.last_updated.strftime('%Y-%m-%d %H:%M') if feed.last_updated else 'Never' }} | 
+                        Update Frequency: {{ feed.update_frequency }} minutes
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; color: #6c757d; padding: 40px;">
+                <h4>No RSS feeds added yet</h4>
+                <p>Add RSS feeds above to start tracking live content sources for research summaries.</p>
+                <p><strong>Popular RSS Feeds to Try:</strong></p>
+                <ul style="text-align: left; display: inline-block;">
+                    <li>BBC News: http://feeds.bbci.co.uk/news/rss.xml</li>
+                    <li>TechCrunch: https://techcrunch.com/feed/</li>
+                    <li>Reuters: https://www.reutersagency.com/feed/?taxonomy=best-topics&post_type=best</li>
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div style="margin-top: 30px; padding: 15px; background-color: #e3f2fd; border: 1px solid #bbdefb; border-radius: 5px;">
+        <h4>💡 How Live Feeds Work:</h4>
+        <ol>
+            <li><strong>Add RSS Feeds:</strong> Enter URLs from news sites, blogs, or any RSS-enabled source</li>
+            <li><strong>Auto-Update:</strong> The system automatically fetches new content from your feeds</li>
+            <li><strong>Generate Summaries:</strong> Create AI-powered summaries combining multiple sources</li>
+            <li><strong>Track Trends:</strong> Identify emerging topics and key insights across all sources</li>
+        </ol>
+    </div>
+</body>
+</html>

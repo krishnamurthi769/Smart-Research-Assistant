@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
@@ -15,6 +15,24 @@
         h1 {
             color: #333;
             text-align: center;
+        }
+        .nav {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .nav a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 8px 15px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+        .nav a:hover {
+            background-color: #e9ecef;
         }
         textarea {
             width: 100%;
@@ -56,10 +74,38 @@
             margin-top: 0;
             color: #155724;
         }
+        .citations {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .citation {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-left: 3px solid #ffc107;
+            background-color: #fffbf0;
+        }
+        .recent-activity {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
     <h1>Smart Research Assistant</h1>
+    
+    <div class="nav">
+        <a href="/">URL Research</a>
+        <a href="/upload">PDF Upload & Q&A</a>
+        <a href="/feeds">Live RSS Feeds</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/live_summary">Live Summary</a>
+    </div>
     
     <form method="POST" action="/summarize">
         <textarea name="urls" placeholder="Enter URLs (one per line) to analyze and summarize...">{% if original_urls %}{{ original_urls }}{% endif %}</textarea>
@@ -76,7 +122,32 @@
     {% if summary %}
         <div class="summary">
             <h3>Research Summary</h3>
-            {{ summary|safe }}
+            {{ summary|replace('<script', '&lt;script')|replace('</script>', '&lt;/script&gt;')|replace('<iframe', '&lt;iframe')|replace('</iframe>', '&lt;/iframe&gt;')|replace('<br>', '<br>')|safe }}
+        </div>
+    {% endif %}
+    
+    {% if citations %}
+        <div class="citations">
+            <h3>Sources & Citations</h3>
+            {% for citation in citations %}
+                <div class="citation">
+                    <strong>{{ citation.source_title }}</strong><br>
+                    <a href="{{ citation.source_url }}" target="_blank">{{ citation.source_url }}</a><br>
+                    <em>{{ citation.excerpt }}</em>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    {% if recent_summaries %}
+        <div class="recent-activity">
+            <h3>Recent Research Activity</h3>
+            {% for summary in recent_summaries %}
+                <div style="margin-bottom: 10px; padding: 8px; border-left: 3px solid #2196f3; background-color: #f3f9ff;">
+                    <strong>{{ summary.source_type|title }} Summary</strong> - {{ summary.created_at.strftime('%Y-%m-%d %H:%M') }}<br>
+                    <em>{{ summary.key_takeaways[:100] }}...</em>
+                </div>
+            {% endfor %}
         </div>
     {% endif %}
 </body>
